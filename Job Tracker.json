@@ -1,0 +1,215 @@
+{
+  "name": "My workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 9
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -96,
+        -288
+      ],
+      "id": "640052ed-a8eb-41ef-8549-69892ad5d189",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "url": "https://serpapi.com/search.json?engine=google_jobs&q=Power+BI+Analyst+India&hl=en&gl=in&api_key=61ebcab4980a41be3c0b91c1e72201ceb18c96ed77c9097cdf3f4ea57ef8b1d0",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        128,
+        -288
+      ],
+      "id": "69ecb90e-9b17-40f6-b595-fe18adc4a4e6",
+      "name": "HTTP Request",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "ucMLKyM38YnWtaq8",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fromEmail": "neelam1501neelam@gmail.com",
+        "toEmail": "neelam1501neelam@gmail.com",
+        "subject": "New Job Postings ",
+        "html": "=<h2>🔥 Your Daily Job Alerts</h2>\n\n<p>Here are the latest job opportunities:</p>\n\n{{ $json.job_list.map(job => `\n  <div style=\"margin-bottom: 20px; padding: 10px; border: 1px solid #ccc; border-radius: 8px;\">\n    <h3>${job.title}</h3>\n    <p><strong>Company:</strong> ${job.company_name}</p>\n    <p><strong>Location:</strong> ${job.location}</p>\n    <p><a href=\"${job.share_link}\" target=\"_blank\">View Job Posting</a></p>\n  </div>\n`).join('') }}\n\n<p>—<br>Your Job Tracker Agent 🤖</p>\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        1024,
+        -288
+      ],
+      "id": "813397ff-63ef-45f6-898a-a5492f5b28e5",
+      "name": "Send email",
+      "webhookId": "bdecc89c-56f0-45fc-aa36-b397fab47d57",
+      "credentials": {
+        "smtp": {
+          "id": "qCZqBcDTrTqHA7Nt",
+          "name": "SMTP account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "e4bb91d6-8926-483e-9f8d-d8a927e61abf",
+              "name": "title",
+              "value": "={{$json[\"title\"]}}",
+              "type": "string"
+            },
+            {
+              "id": "a72fb6bb-53ae-4286-a313-e9d85785d988",
+              "name": "company_name",
+              "value": "={{$json[\"company_name\"]}}",
+              "type": "string"
+            },
+            {
+              "id": "e9f47725-e4de-4769-a02b-1754d467ddc2",
+              "name": "location",
+              "value": "={{$json[\"location\"]}}",
+              "type": "string"
+            },
+            {
+              "id": "74afd09f-6d73-4fb5-bf55-8cf8938f5e24",
+              "name": "share_link",
+              "value": "={{$json[\"share_link\"]}}",
+              "type": "string"
+            },
+            {
+              "id": "7bf62b79-220d-4169-8ee7-fc9fa0a6deea",
+              "name": "description",
+              "value": "={{ $json[\"description\"] }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        576,
+        -288
+      ],
+      "id": "83df6214-ef34-43e8-a61d-29c5420d8484",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "jobs_results",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        352,
+        -288
+      ],
+      "id": "5f572311-e370-4bf3-ba30-4f4c2b9e38b5",
+      "name": "Split Out"
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "destinationFieldName": "job_list",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        800,
+        -288
+      ],
+      "id": "e799946d-4fd5-4839-98a2-e9194b38aef1",
+      "name": "Aggregate"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Split Out",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate": {
+      "main": [
+        [
+          {
+            "node": "Send email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "f75b9bbf-3671-4c6a-95b1-385f6a4080b4",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "fcabec326eeb37183740230637812b3a96da43830eeb54cb70e7767f7396f145"
+  },
+  "id": "aQ4I0wYBtzlGywER",
+  "tags": []
+}
